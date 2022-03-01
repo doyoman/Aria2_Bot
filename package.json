@@ -1,5 +1,5 @@
 {
-  "name": "my-node-app-5",
+  "name": "Aria2Bot",
   "version": "1.0.0",
   "dependencies": {
     "axios": "^0.26.0",
