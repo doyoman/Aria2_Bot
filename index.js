@@ -17,9 +17,9 @@ const token = configs.token || "";
       bot.sendMessage(msg.chat.id, "你不是我的主人哦！");
     } else {
       if (msg.text == "正在下载") {
-        let mes = await aria2_tellActive();
-        mes = mes.join("\n");
+        let [mes, gid_li] = await aria2_tellActive();
         if (mes != "当前没有下载任务！") {
+          mes = mes.join("\n");
           const opts = {
             reply_markup: {
               inline_keyboard: [
@@ -63,8 +63,12 @@ const token = configs.token || "";
         const [mes, gid_li] = await aria2_tellWaiting();
         bot.sendMessage(msg.chat.id, mes.join("\n"));
       } else if (msg.text == "移除任务") {
-        const [mes1, gid_li1] = await aria2_tellActive();
+        let [mes1, gid_li1] = await aria2_tellActive();
+        
         const [mes2, gid_li2] = await aria2_tellWaiting();
+        if (mes1 == "当前没有下载任务！") {
+          mes1 = [];
+        }
         const [mes, gid_li] = [mes1.concat(mes2), gid_li1.concat(gid_li2)];
         
         const opts = {
@@ -108,6 +112,9 @@ const token = configs.token || "";
       } else if (msg.text == "暂停任务") {
         
         let [mes, gid_li] = await aria2_tellActive();
+        if (mes == "当前没有下载任务！") {
+          return bot.sendMessage(msg.chat.id, mes);
+        }
         const opts = {
           reply_markup: {
             inline_keyboard: (() => {
@@ -361,7 +368,7 @@ function aria2_tellActive() {
     //return rsp.data.result;
     
     if (rsp.data.result.length == 0) {
-      return "当前没有下载任务！";
+      return ["当前没有下载任务！", []];
     }
     let mes = [];
     let gid_li = [];
