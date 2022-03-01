@@ -1,0 +1,9 @@
+{
+  "name": "my-node-app-5",
+  "version": "1.0.0",
+  "dependencies": {
+    "axios": "^0.26.0",
+    "js-base64": "^3.7.2",
+    "node-telegram-bot-api": "^0.56.0"
+  }
+}
