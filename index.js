@@ -3,12 +3,17 @@ const axios = require("axios");
 const base64 = require("js-base64");
 const path = require("path");
 const fs = require("fs");
-const configs = require("./bot.json");
 
-const bot_token = configs.bot_token || "";
-const bot_chatid = configs.bot_chatid || "";
-const rpc_url = configs.rpc_url || "";
-const token = configs.token || "";
+try {
+  var configs = require("./bot.json");
+} catch(err) {
+  return console.log("请在当前目录添加配置 bot.json 文件");
+}
+
+const bot_token = configs.bot_token;
+const bot_chatid = configs.bot_chatid;
+const rpc_url = configs.rpc_url;
+const token = configs.token;
 
 (async () => {
   const bot = new TelegramBot(bot_token, {polling: true});
