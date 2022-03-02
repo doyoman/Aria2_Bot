@@ -1,0 +1,6 @@
+{
+  "bot_token": "abcdefg1234567890",
+  "bot_chatid": "1234567890",
+  "rpc_url": "http://xx.xxxx.xx:xxxx/jsonrpc",
+  "token": "987654321"
+}
