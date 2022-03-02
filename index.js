@@ -46,7 +46,7 @@ const token = configs.token || "";
                 i++;
                 ((i) => {
                     setTimeout(async () => {
-                      const edit_mes = await aria2_tellActive();
+                      const [edit_mes, gids] = await aria2_tellActive();
                       bot.editMessageText(edit_mes.join("\n"), opts);
                     }, i*3000)
                 })(i);
@@ -148,8 +148,8 @@ const token = configs.token || "";
             chat_id: msg.chat.id,
             message_id: msg.message_id,
           };
-          const data = await aria2_pause();
-          bot.editMessageText(`{${data.result}}已暂停！`, opts);
+          const result = await aria2_pause();
+          bot.editMessageText(`{${result}}已暂停！`, opts);
           
         });
 
