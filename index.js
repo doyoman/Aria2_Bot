@@ -25,7 +25,8 @@ const token = configs.token;
         keyboard: [
           ['正在下载', '正在等待', '已完成/已停止'],
           ['暂停任务', '继续任务', '移除任务']
-        ]
+        ],
+        resize_keyboard: true
       })
     };
     bot.sendMessage(msg.chat.id, 'Aria2Bot启动成功！', opts);
