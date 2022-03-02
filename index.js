@@ -408,6 +408,7 @@ function aria2_tellActive() {
       let downloadSpeed = byteTransfer(result.downloadSpeed);
       let gid = result.gid;
       let str = `文件名: ${name}
+${ProgressBar(result.completedLength, result.totalLength)}
 已下载: ${completedLength}  共 ${totalLength} 
 速度: ${downloadSpeed}/s
 GID: ${result.gid}
@@ -458,8 +459,9 @@ function aria2_tellStopped() {
 
       let str = `
 文件名: ${name}
-状态: ${status}
+${ProgressBar(result.completedLength, result.totalLength)}
 已下载: ${completedLength} 共 ${totalLength}
+状态: ${status}
 GID: ${gid}
 `;
       mes.push(str);
@@ -492,3 +494,24 @@ function streamToBuffer(stream) {
     stream.on('end', () => resolve(Buffer.concat(buffers)))  
   });
  }
+ 
+//进度条
+function ProgressBar(num, total){
+  const description = "下载进度";
+  const length = 10;
+   
+  let percent = (num / total).toFixed(4);
+  let cell_num = Math.floor(percent * length);
+  let cell = '';
+  for (let i=0;i<cell_num;i++) {
+    cell += '▣';
+  }
+  let empty = '';
+  for (let i=0;i<length-cell_num;i++) {
+    empty += '▒';
+  }
+  let cmdText = description + ':\n' + cell + empty + " " + (100*percent).toFixed(2) + '%';
+  
+  return cmdText
+ 
+}
