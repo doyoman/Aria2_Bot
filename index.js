@@ -220,9 +220,9 @@ const token = configs.token || "";
         });
         
 
-      } else if (/\.torrent/.test(JSON.stringify(msg))) {
+      } else if (/application\/x\-bittorrent/.test(JSON.stringify(msg))) {
         try {
-          console.log(msg);
+          //console.log(msg);
           const stream = bot.getFileStream(msg.document.file_id);
           const Torrent = await streamToBuffer(stream);
           const data = await aria2_addTorrent(base64.encode(Torrent));
@@ -237,7 +237,7 @@ const token = configs.token || "";
           const gid = await aria2_addUri(msg.text);
           bot.sendMessage(msg.chat.id, `{${gid}}任务开始下载！`);
         } else {
-          console.log(msg);
+          //console.log(msg);
           bot.sendMessage(msg.chat.id, `您发送的内容我不认识哦～`);
         }
         
