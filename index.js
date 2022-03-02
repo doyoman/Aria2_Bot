@@ -12,6 +12,20 @@ const token = configs.token || "";
 
 (async () => {
   const bot = new TelegramBot(bot_token, {polling: true});
+  
+  bot.onText(/\/start/, function startText(msg) {
+    const opts = {
+      reply_to_message_id: msg.message_id,
+      reply_markup: JSON.stringify({
+        keyboard: [
+          ['正在下载', '正在等待', '已完成/已停止'],
+          ['暂停任务', '继续任务', '移除任务']
+        ]
+      })
+    };
+    bot.sendMessage(msg.chat.id, 'Aria2Bot启动成功！', opts);
+  });
+  
   bot.on("message", async msg => {
     if (msg.chat.id != bot_chatid) {
       bot.sendMessage(msg.chat.id, "你不是我的主人哦！");
@@ -60,16 +74,25 @@ const token = configs.token || "";
         const data = await aria2_tellStopped();
         bot.sendMessage(msg.chat.id, data);
       } else if (msg.text == "正在等待") {
-        const [mes, gid_li] = await aria2_tellWaiting();
+        let [mes, gid_li] = await aria2_tellWaiting();
+        if (mes == "当前没有下载任务！") {
+          mes = ["当前没有正在等待的任务！"];
+        }
         bot.sendMessage(msg.chat.id, mes.join("\n"));
       } else if (msg.text == "移除任务") {
         let [mes1, gid_li1] = await aria2_tellActive();
         
-        const [mes2, gid_li2] = await aria2_tellWaiting();
+        let [mes2, gid_li2] = await aria2_tellWaiting();
         if (mes1 == "当前没有下载任务！") {
           mes1 = [];
         }
-        const [mes, gid_li] = [mes1.concat(mes2), gid_li1.concat(gid_li2)];
+        if (mes2 == "当前没有下载任务！") {
+          mes2 = [];
+        }
+        let [mes, gid_li] = [mes1.concat(mes2), gid_li1.concat(gid_li2)];
+        if (mes.join("") == "") {
+          return bot.sendMessage(msg.chat.id, "当前没有可移除任务！");
+        }
         
         const opts = {
           reply_markup: {
@@ -113,7 +136,7 @@ const token = configs.token || "";
         
         let [mes, gid_li] = await aria2_tellActive();
         if (mes == "当前没有下载任务！") {
-          return bot.sendMessage(msg.chat.id, mes);
+          return bot.sendMessage(msg.chat.id, "当前没有可暂停任务！");
         }
         const opts = {
           reply_markup: {
@@ -155,6 +178,9 @@ const token = configs.token || "";
 
       } else if (msg.text == "继续任务") {
         let [mes, gid_li] = await aria2_tellWaiting();
+        if (mes == "当前没有下载任务！") {
+          return bot.sendMessage(msg.chat.id, "当前没有可继续任务！")
+        }
         const opts = {
           reply_markup: {
             inline_keyboard: (() => {
@@ -317,10 +343,13 @@ function aria2_tellWaiting() {
     ]]
   };
   return axios.post(rpc_url, opt).then(rsp => {
+    if (rsp.data.result.length == 0) {
+      return ["当前没有下载任务！", []];
+    }
     const mes = [];
     const gid_li = [];
     for (let result of rsp.data.result) {
-      let name = result.files[0].path;
+      let name = path.basename(result.files[0].path);
       let completedLength = byteTransfer(result.completedLength);
       let totalLength = byteTransfer(result.totalLength);
       let gid = result.gid;
@@ -373,7 +402,7 @@ function aria2_tellActive() {
     let mes = [];
     let gid_li = [];
     for (let result of rsp.data.result) {
-      let name = result.files[0].path;
+      let name = path.basename(result.files[0].path);
       let completedLength = byteTransfer(result.completedLength);
       let totalLength = byteTransfer(result.totalLength);
       let downloadSpeed = byteTransfer(result.downloadSpeed);
@@ -416,9 +445,12 @@ function aria2_tellStopped() {
     ]]
   };
   return axios.post(rpc_url, opt).then(rsp => {
+    if (rsp.data.result.length == 0) {
+      return "当前没有已完成/已停止任务！"
+    }
     const mes = [];
     for (let result of rsp.data.result) {
-      let name = result.files[0].path;
+      let name = path.basename(result.files[0].path);
       let completedLength = byteTransfer(result.completedLength);
       let totalLength = byteTransfer(result.totalLength);
       let gid = result.gid;
