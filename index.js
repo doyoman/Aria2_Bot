@@ -15,27 +15,17 @@ const bot_chatid = configs.bot_chatid;
 const rpc_url = configs.rpc_url;
 const token = configs.token;
 
+const bot = new TelegramBot(bot_token, {polling: true});
+
 (async () => {
-  const bot = new TelegramBot(bot_token, {polling: true});
-  
-  bot.onText(/\/start/, function startText(msg) {
-    const opts = {
-      reply_to_message_id: msg.message_id,
-      reply_markup: JSON.stringify({
-        keyboard: [
-          ['正在下载', '正在等待', '已完成/已停止'],
-          ['暂停任务', '继续任务', '移除任务']
-        ],
-        resize_keyboard: true
-      })
-    };
-    bot.sendMessage(msg.chat.id, 'Aria2Bot启动成功！', opts);
-  });
-  
   bot.on("message", async msg => {
     if (msg.chat.id != bot_chatid) {
+      bot.sendMessage(bot_chatid, `用户 @${msg.chat.username} 正在骚扰您的bot...\n消息内容：\n"${msg.text}"`);
       bot.sendMessage(msg.chat.id, "你不是我的主人哦！");
     } else {
+      if (msg.text == "/start") {
+        return startText(msg);
+      }
       if (msg.text == "正在下载") {
         let [mes, gid_li] = await aria2_tellActive();
         if (mes != "当前没有下载任务！") {
@@ -474,6 +464,22 @@ GID: ${gid}
     }
     return mes.join("");
   });
+}
+
+//设置键盘
+function startText(msg) {
+    const opts = {
+      //reply_to_message_id: msg.message_id,
+      reply_markup: JSON.stringify({
+        keyboard: [
+          ['正在下载', '正在等待', '已完成/已停止'],
+          ['暂停任务', '继续任务', '移除任务']
+        ],
+        resize_keyboard: true
+      })
+    };
+    bot.sendMessage(msg.chat.id, 'Aria2Bot启动成功！', opts);
+    
 }
 
 //字节转换
